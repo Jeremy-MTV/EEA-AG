@@ -1,0 +1,430 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="mb-2 mb-md-0">
+        <h2 class="fw-bold m-0"><i class="bi bi-bank text-danger"></i> Gestion de l'Assemblée Générale</h2>
+    </div>
+    <div>
+        <button type="button" class="btn btn-outline-info btn-sm me-2 shadow-sm" data-bs-toggle="modal"
+            data-bs-target="#exportCsvAgModal">
+            <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
+        </button>
+        <button type="button" class="btn btn-outline-dark btn-sm me-2 shadow-sm" data-bs-toggle="modal"
+            data-bs-target="#exportDbModal">
+            <i class="bi bi-database-down"></i> Export DB
+        </button>
+        <a href="{{ url_for('admin.guide') }}" class="btn btn-sm btn-outline-secondary rounded-pill me-2"><i
+                class="bi bi-journal-text"></i> Guide</a>
+        <button type="button" class="btn btn-primary btn-sm me-2 shadow-sm" data-bs-toggle="modal"
+            data-bs-target="#convocationsModal" title="Envoyer des QR Codes ciblés">
+            <i class="bi bi-envelope-paper-fill"></i> Convocations
+        </button>
+    </div>
+</div>
+
+<!-- Section Stats / Quorum -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white text-center p-3 h-100 shadow-sm border-0">
+            <h5 class="mb-0">Inscrits (Total)</h5>
+            <h2 class="fw-bold mb-0 display-4" id="valTotal">{{ stats.total }}</h2>
+            <small class="opacity-75">Base de calcul</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white text-center p-3 h-100 shadow-sm border-0">
+            <h5 class="mb-0">Présents / Représentés</h5>
+            <h2 class="fw-bold mb-0 display-4" id="valPresents">{{ stats.presents }}</h2>
+            <small class="opacity-75">Personnes validées</small>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card bg-dark text-white p-3 h-100 shadow-sm border-0 position-relative overflow-hidden">
+            <div class="d-flex justify-content-between align-items-end mb-2 position-relative" style="z-index: 2;">
+                <h5 class="mb-0">Quorum Légal (50% + 1)</h5>
+                <h2 class="fw-bold mb-0" id="valPercent">{{ stats.percent }}%</h2>
+            </div>
+            <div class="progress mt-2 bg-secondary" style="height: 12px; z-index: 2; position: relative;">
+                <div id="gaugeBar"
+                    class="progress-bar {% if stats.percent >= 50 %}bg-success{% else %}bg-warning progress-bar-striped progress-bar-animated{% endif %}"
+                    role="progressbar" style="width: {{ stats.percent }}%;" aria-valuenow="{{ stats.percent }}"
+                    aria-valuemin="0" aria-valuemax="100">
+                </div>
+            </div>
+            <div id="quorumStatus">
+                {% if stats.percent >= 50 %}
+                <div class="position-absolute top-50 start-50 translate-middle text-center"
+                    style="z-index: 1; opacity: 0.1;">
+                    <i class="bi bi-check-circle-fill" style="font-size: 8rem;"></i>
+                </div>
+                <p class="text-success small fw-bold mt-2 mb-0 position-relative" style="z-index: 2;"><i
+                        class="bi bi-stars"></i> Le Quorum est atteint ! L'AG peut délibérer.</p>
+                {% else %}
+                <p class="text-warning small mt-2 mb-0 position-relative" style="z-index: 2;"><i
+                        class="bi bi-exclamation-triangle"></i> Quorum non atteint. En attente de plus de membres...</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section Les 3 Interfaces Principales -->
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card h-100 shadow-lg border-0 bg-light p-4 text-center"
+            style="cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;"
+            onclick="window.open('{{ url_for('scan.manager_interface') }}', '_blank')">
+            <i class="bi bi-upc-scan display-1 text-primary mb-3"></i>
+            <h3 class="fw-bold">Interface Gestion (Scan)</h3>
+            <p class="text-muted small">Scanner les QR codes à l'entrée ou valider manuellement les présences.</p>
+            <a href="{{ url_for('scan.manager_interface') }}" target="_blank"
+                class="btn btn-primary mt-auto stretched-link">Ouvrir le Scan</a>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 shadow-lg border-0 bg-light p-4 text-center"
+            style="cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;"
+            onclick="window.open('{{ url_for('scan.user_screen') }}', '_blank')">
+            <i class="bi bi-display display-1 text-success mb-3"></i>
+            <h3 class="fw-bold">Écran Utilisateur</h3>
+            <p class="text-muted small">Écran projeté vers le membre pour validation visuelle instantanée lors du scan.
+            </p>
+            <a href="{{ url_for('scan.user_screen') }}" target="_blank"
+                class="btn btn-success mt-auto stretched-link">Ouvrir l'Écran Utilisateur</a>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 shadow-lg border-0 bg-light p-4 text-center"
+            style="cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;"
+            onclick="window.open('{{ url_for('scan.tv_display') }}', '_blank')">
+            <i class="bi bi-tv display-1 text-dark mb-3"></i>
+            <h3 class="fw-bold">Affichage Écran TV</h3>
+            <p class="text-muted small">Progression du Quorum projetée en direct sur grand écran dans la salle.</p>
+            <a href="{{ url_for('scan.tv_display') }}" target="_blank"
+                class="btn btn-dark mt-auto stretched-link">Ouvrir l'Écran TV</a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <!-- Section Automatisations -->
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 border-top border-4 border-danger h-100 bg-light">
+            <div class="card-body">
+                <h5 class="fw-bold text-danger mb-3"><i class="bi bi-robot"></i> Automatisations & Clôture</h5>
+                <p class="text-muted small mb-4">Actions globales à effectuer en fin de saison ou pour la gestion de
+                    campagne.</p>
+                <div class="d-grid gap-2">
+                    <form action="{{ url_for('admin.send_campaign_renewal') }}" method="POST"
+                        onsubmit="return confirm('Envoyer un email de rappel à tous les membres non renouvelés ?');">
+                        <button type="submit" class="btn btn-warning w-100 text-start"><i
+                                class="bi bi-envelope-at me-2"></i> Relance Renouvellement (Email Auto)</button>
+                    </form>
+
+                    <form action="{{ url_for('admin.reset_db_annual') }}" method="POST"
+                        onsubmit="return confirm('ATTENTION : Action IRRÉVERSIBLE ! Cela va créer une archive JSON et réinitialiser toutes les présences, refus, procurations et jetons de l\'année. Continuer ?');">
+                        <button type="submit" class="btn btn-danger w-100 text-start"><i
+                                class="bi bi-database-fill-gear me-2"></i> Clôture Annuelle (31 Août)</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Liste des Présences -->
+<div class="card shadow-sm border-0 mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-list-check"></i> État des Présences (Temps Réel)</span>
+        <input type="text" id="searchTable" class="form-control form-control-sm w-25" placeholder="Chercher un nom...">
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th>Membre</th>
+                    <th>Statut</th>
+                    <th>Heure Pointage</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                {% for m in membres %}
+                <tr>
+                    <td>
+                        <div class="fw-bold">{{ m.nom }} {{ m.prenom }}</div>
+                        <div class="text-muted small">{{ m.email or 'Aucun email' }}</div>
+                    </td>
+                    <td>
+                        {% if m.is_refused %}
+                        <span class="badge bg-danger"><i class="bi bi-ban"></i> Refusé</span>
+                        {% elif m.is_present %}
+                        <span class="badge bg-success"><i class="bi bi-check"></i> Présent</span>
+                        {% else %}
+                        <span class="badge bg-light text-muted border">Absent</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted small">{{ m.check_in_time or '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const searchTable = document.getElementById('searchTable');
+
+    searchTable.addEventListener('keyup', function () {
+        var value = this.value.toLowerCase();
+        var rows = document.querySelectorAll('#tableBody tr');
+        rows.forEach(function (row) {
+            var text = row.textContent.toLowerCase();
+            row.style.display = text.indexOf(value) > -1 ? '' : 'none';
+        });
+    });
+
+    function updateAgStats() {
+        fetch("{{ url_for('admin.api_ag_stats') }}")
+            .then(res => res.json())
+            .then(data => {
+                // Update stats top cards
+                document.getElementById('valTotal').innerText = data.total;
+                document.getElementById('valPresents').innerText = data.presents;
+                document.getElementById('valPercent').innerText = data.percent + '%';
+
+                const gaugeBar = document.getElementById('gaugeBar');
+                const quorumStatus = document.getElementById('quorumStatus');
+
+                if (gaugeBar) {
+                    gaugeBar.style.width = data.percent + '%';
+                    gaugeBar.setAttribute('aria-valuenow', data.percent);
+
+                    if (data.percent >= 50) {
+                        gaugeBar.className = 'progress-bar bg-success';
+                        quorumStatus.innerHTML = `
+                            <div class="position-absolute top-50 start-50 translate-middle text-center" style="z-index: 1; opacity: 0.1;">
+                                <i class="bi bi-check-circle-fill" style="font-size: 8rem;"></i>
+                            </div>
+                            <p class="text-success small fw-bold mt-2 mb-0 position-relative" style="z-index: 2;">
+                                <i class="bi bi-stars"></i> Le Quorum est atteint ! L'AG peut délibérer.
+                            </p>`;
+                    } else {
+                        gaugeBar.className = 'progress-bar bg-warning progress-bar-striped progress-bar-animated';
+                        quorumStatus.innerHTML = `
+                            <p class="text-warning small mt-2 mb-0 position-relative" style="z-index: 2;">
+                                <i class="bi bi-exclamation-triangle"></i> Quorum non atteint. En attente de plus de membres...
+                            </p>`;
+                    }
+                }
+
+                // Build dynamic table body
+                const tableBody = document.getElementById('tableBody');
+                let newHtml = '';
+                data.membres.forEach(m => {
+                    let statusHtml = '<span class="badge bg-light text-muted border">Absent</span>';
+                    if (m.is_refused) {
+                        statusHtml = '<span class="badge bg-danger"><i class="bi bi-ban"></i> Refusé</span>';
+                    } else if (m.is_present) {
+                        statusHtml = '<span class="badge bg-success"><i class="bi bi-check"></i> Présent</span>';
+                    }
+
+                    const timeStr = m.check_in_time ? m.check_in_time : '-';
+                    const emailStr = m.email ? m.email : 'Aucun email';
+
+                    newHtml += `<tr>
+                        <td>
+                            <div class="fw-bold">${m.nom} ${m.prenom}</div>
+                            <div class="text-muted small">${emailStr}</div>
+                        </td>
+                        <td>${statusHtml}</td>
+                        <td class="text-muted small">${timeStr}</td>
+                    </tr>`;
+                });
+
+                tableBody.innerHTML = newHtml;
+
+                // Reapply search filter if there is one
+                if (searchTable.value) {
+                    searchTable.dispatchEvent(new Event('keyup'));
+                }
+            })
+            .catch(err => console.error(err));
+    }
+
+    // Auto-refresh the dashboard UI every 3 seconds
+    setInterval(updateAgStats, 3000);
+
+    // JS Logic for the Convocations Modal Selection
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggleBtn = document.getElementById('toggleAllMembers');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function () {
+                const checkboxes = document.querySelectorAll('.member-checkbox');
+                let allChecked = true;
+
+                // First, determine if all visible checkboxes are currently checked
+                checkboxes.forEach(cb => {
+                    if (!cb.checked && !cb.closest('li').classList.contains('d-none')) {
+                        allChecked = false;
+                    }
+                });
+
+                // Toggle state
+                checkboxes.forEach(cb => {
+                    // Only toggle checkboxes that are not filtered out by search if needed
+                    if (!cb.closest('li').classList.contains('d-none')) {
+                        cb.checked = !allChecked;
+                    }
+                });
+
+                this.innerHTML = allChecked ? '<i class="bi bi-check-square"></i> Tout Sélectionner' : '<i class="bi bi-square"></i> Tout Désélectionner';
+            });
+        }
+
+        // Simple search filter in the modal
+        const searchInput = document.getElementById('searchConvocations');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function () {
+                const term = this.value.toLowerCase();
+                document.querySelectorAll('.member-convoc-item').forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(term)) {
+                        item.classList.remove('d-none');
+                    } else {
+                        item.classList.add('d-none');
+                    }
+                });
+            });
+        }
+    });
+</script>
+
+<!-- Export CSV AG Modal -->
+<div class="modal fade" id="exportCsvAgModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-info text-dark">
+                <h5 class="modal-title"><i class="bi bi-info-circle-fill"></i> Exporter l'Analytique de l'AG</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p>En lançant cet export, le système effectuera <strong>automatiquement 4 actions</strong> :</p>
+                <ul class="mb-0">
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Téléchargement du fichier CSV sur votre
+                        ordinateur.</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Création d'une copie serveur locale dans
+                        <code>/backups/manual/</code>.
+                    </li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Synchronisation du fichier sur le dossier
+                        partagé (NAS).</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Mise à jour immédiate du document en ligne
+                        Google Sheets.</li>
+                </ul>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                <a href="{{ url_for('admin.export_csv', export_type='ag') }}" class="btn btn-info text-dark fw-bold"
+                    onclick="setTimeout(()=>bootstrap.Modal.getInstance(document.getElementById('exportCsvAgModal')).hide(), 1000);">
+                    <i class="bi bi-download"></i> Lancer l'Export Multiple
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export DB Modal -->
+<div class="modal fade" id="exportDbModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="bi bi-info-circle-fill"></i> Exporter la Base de Données</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p>En lançant cet export, le système effectuera <strong>3 actions de sécurité</strong> :</p>
+                <ul class="mb-0">
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Téléchargement de la base mère complète
+                        <code>.db</code> sur votre machine.
+                    </li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Sauvegarde locale de secours conservée dans
+                        <code>/backups/manual/</code>.
+                    </li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Copie de secours miroir transférée sur le
+                        NAS.</li>
+                </ul>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                <a href="{{ url_for('admin.export_db') }}" class="btn btn-dark fw-bold"
+                    onclick="setTimeout(()=>bootstrap.Modal.getInstance(document.getElementById('exportDbModal')).hide(), 1000);">
+                    <i class="bi bi-download"></i> Lancer l'Export Serveur
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Targeted Convocations Modal -->
+<div class="modal fade" id="convocationsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <form action="{{ url_for('admin.send_convocations') }}" method="POST">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-envelope-paper-fill"></i> Envoi des Convocations Ciblées
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="p-3 bg-light border-bottom sticky-top shadow-sm z-3">
+                        <p class="small text-muted mb-2">Sélectionnez les membres qui doivent recevoir le rappel
+                            contenant leur QR Code de participation à l'AG.</p>
+                        <input type="text" id="searchConvocations" class="form-control mb-2"
+                            placeholder="Rechercher un membre...">
+                        <button type="button" id="toggleAllMembers" class="btn btn-sm btn-outline-primary w-100">
+                            <i class="bi bi-check-square"></i> Tout Sélectionner
+                        </button>
+                    </div>
+
+                    <ul class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
+                        {% for membre in membres|sort(attribute='nom') %}
+                        {% if membre.email %}
+                        <li class="list-group-item list-group-item-action member-convoc-item user-select-none">
+                            <div class="form-check d-flex justify-content-between align-items-center">
+                                <div>
+                                    <input class="form-check-input member-checkbox" type="checkbox"
+                                        name="selected_members" value="{{ membre.id }}" id="convoc_{{ membre.id }}">
+                                    <label class="form-check-label fw-bold ms-2 stretched-link"
+                                        for="convoc_{{ membre.id }}" style="cursor: pointer;">
+                                        {{ membre.nom }} {{ membre.prenom }}
+                                    </label>
+                                    <div class="small text-muted ms-4">{{ membre.email }}</div>
+                                </div>
+                                <div>
+                                    {% if membre.statut_membre == 'Membre année en cours' %}
+                                    <span class="badge bg-success bg-opacity-75">Actif</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary bg-opacity-50">Autre</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary fw-bold"
+                        onclick="this.innerHTML='<span class=\'spinner-border spinner-border-sm\'></span> Envoi...'; this.classList.add('disabled'); this.form.submit();">
+                        <i class="bi bi-send-fill"></i> Envoyer les QR Codes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

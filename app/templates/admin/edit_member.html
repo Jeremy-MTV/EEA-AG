@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold"><i class="bi bi-pencil-square"></i> Modifier le Membre #{{ m.id }}</h2>
+            <a href="{{ url_for('admin.members_dashboard') }}" class="btn btn-outline-secondary"><i
+                    class="bi bi-arrow-left"></i> Retour</a>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-12 bg-light p-3 rounded mb-3 border">
+                            <label class="form-label fw-bold text-danger">Statut de l'AG (Présence/Refus)</label>
+                            <select name="statut_ag" class="form-select fw-bold">
+                                <option value="absent" {% if not m.is_present and not m.is_refused %}selected{% endif
+                                    %}>Absent (Par défaut)</option>
+                                <option value="present" class="text-success" {% if m.is_present %}selected{% endif %}>
+                                    Présent (Validé)</option>
+                                <option value="refused" class="text-danger" {% if m.is_refused %}selected{% endif %}>
+                                    Refusé (Bloqué)</option>
+                            </select>
+                        </div>
+
+                        <!-- Statut global du membre -->
+                        <div class="col-12 bg-info bg-opacity-10 p-3 rounded mb-3 border border-info">
+                            <label class="form-label fw-bold text-info-emphasis">Statut Global (Type de membre)</label>
+                            <select name="statut_membre" class="form-select">
+                                <option value="Futur membre" {% if m.statut_membre=='Futur membre' %}selected{% endif
+                                    %}>Futur membre</option>
+                                <option value="Membre année en cours" {% if m.statut_membre=='Membre année en cours'
+                                    %}selected{% endif %}>Membre année en cours</option>
+                                <option value="Ancien membre" {% if m.statut_membre=='Ancien membre' %}selected{% endif
+                                    %}>Ancien membre</option>
+                            </select>
+                            <div class="form-text">Ce statut permet de catégoriser la personne dans l'association
+                                (indépendamment de sa présence à l'AG).</div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="form-label small text-muted">Civilité</label>
+                            <select name="civilite" class="form-select">
+                                <option value="Monsieur" {% if m.civilite=='Monsieur' %}selected{% endif %}>M.</option>
+                                <option value="Madame" {% if m.civilite=='Madame' %}selected{% endif %}>Mme</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small text-muted">Nom</label>
+                            <input type="text" name="nom" class="form-control" value="{{ m.nom }}" required>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small text-muted">Prénom</label>
+                            <input type="text" name="prenom" class="form-control" value="{{ m.prenom }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Email</label>
+                            <input type="email" name="email" class="form-control" value="{{ m.email }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Téléphone</label>
+                            <input type="text" name="telephone" class="form-control" value="{{ m.telephone }}">
+                        </div>
+                        <div class="col-12">
+                            <hr class="my-2">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Adresse</label>
+                            <input type="text" name="adresse" class="form-control" value="{{ m.adresse }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small text-muted">Code Postal</label>
+                            <input type="text" name="code_postal" class="form-control" value="{{ m.code_postal }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted">Ville</label>
+                            <input type="text" name="ville" class="form-control" value="{{ m.ville }}">
+                        </div>
+                        <div class="col-12">
+                            <hr class="my-2">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted">Date Naissance</label>
+                            <input type="text" name="date_naissance" class="form-control" value="{{ m.date_naissance }}"
+                                placeholder="JJ/MM/AAAA">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted">Nationalité</label>
+                            <input type="text" name="nationalite" class="form-control" value="{{ m.nationalite }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted">Métier</label>
+                            <input type="text" name="metier" class="form-control" value="{{ m.metier }}">
+                        </div>
+                        <div class="col-12">
+                            <hr class="my-2">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Date de Baptême</label>
+                            <input type="text" name="date_bapteme" class="form-control" value="{{ m.date_bapteme }}"
+                                placeholder="JJ/MM/AAAA">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Lieu de Baptême</label>
+                            <input type="text" name="lieu_bapteme" class="form-control" value="{{ m.lieu_bapteme }}"
+                                placeholder="Église, Ville...">
+                        </div>
+                        <div class="col-12">
+                            <hr class="my-2">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold text-primary">Renouvellement 25/26</label>
+                            <select name="renouvellement" class="form-select border-primary">
+                                <option value="Oui" {% if m.renouvellement=='Oui' %}selected{% endif %}>Oui (À jour)
+                                </option>
+                                <option value="Non" {% if m.renouvellement=='Non' %}selected{% endif %}>Non</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 mt-4 text-end">
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save"></i> Enregistrer
+                                les modifications</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-success"><i class="bi bi-person-plus"></i> Formulaire d'Inscription</h2>
+            <p class="text-muted">Demande pour devenir membre de l'association.</p>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">NOM</label>
+                            <input type="text" name="nom" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">PRÉNOM</label>
+                            <input type="text" name="prenom" class="form-control" required>
+                        </div>
+
+                        <div class="col-12">
+                            <hr class="my-2">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">EMAIL</label>
+                            <input type="email" name="email" class="form-control" required>
+                            <div class="form-text">Utile pour l'OTP et les procurations.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">TÉLÉPHONE</label>
+                            <input type="text" name="telephone" class="form-control">
+                        </div>
+
+                        <div class="col-12">
+                            <hr class="my-2">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label text-muted small fw-bold">ADRESSE COMPLÈTE</label>
+                            <input type="text" name="adresse" class="form-control" placeholder="Numéro et rue">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small fw-bold">CODE POSTAL</label>
+                            <input type="text" name="code_postal" class="form-control">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label text-muted small fw-bold">VILLE</label>
+                            <input type="text" name="ville" class="form-control">
+                        </div>
+
+                        <div class="col-12">
+                            <hr class="my-2">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">DATE DE BAPTÊME</label>
+                            <input type="text" name="date_bapteme" class="form-control" placeholder="JJ/MM/AAAA">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">LIEU DE BAPTÊME</label>
+                            <input type="text" name="lieu_bapteme" class="form-control" placeholder="Église, Ville...">
+                        </div>
+
+                        <div class="col-12 mt-4 text-center">
+                            <a href="{{ url_for('portal.index') }}"
+                                class="btn btn-outline-secondary px-4 me-2">Annuler</a>
+                            <button type="submit" class="btn btn-success px-5 fw-bold shadow-sm">Soumettre ma
+                                demande</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

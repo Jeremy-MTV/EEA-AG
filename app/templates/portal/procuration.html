@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center pt-4">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold text-warning"><i class="bi bi-file-earmark-person"></i> Déclarer une Procuration</h2>
+            <a href="{{ url_for('portal.logout') }}" class="btn btn-outline-danger btn-sm"><i
+                    class="bi bi-box-arrow-right"></i> Me déconnecter</a>
+        </div>
+
+        <div class="alert alert-warning border-0 shadow-sm">
+            <h5 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> Rappel Légal</h5>
+            <p class="mb-0">Selon les statuts de l'association, chaque membre votant ne peut porter un maximum de
+                <strong>2 procurations</strong> lors de l'Assemblée Générale.</p>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                <h5 class="fw-bold">Nouveau mandat</h5>
+                <p class="text-muted small">Sélectionnez la personne qui vous représentera.</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label text-muted small fw-bold">CHOIX DU MANDATAIRE</label>
+                            <select name="mandataire_id" class="form-select" required>
+                                <option value="" disabled selected>-- Sélectionnez un membre --</option>
+                                {% for autre in autres_membres %}
+                                <option value="{{ autre.id }}">{{ autre.nom }} {{ autre.prenom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small fw-bold">POUR QUELLE AG ?</label>
+                            <select name="type_ag" class="form-select" required>
+                                <option value="AGO">AG Ordinaire seule</option>
+                                <option value="AGE">AG Extraordinaire seule</option>
+                                <option value="DEUX" selected>Les deux (AGO + AGE)</option>
+                            </select>
+                        </div>
+                        <div class="col-12 mt-4 text-end">
+                            <a href="{{ url_for('portal.profil') }}"
+                                class="btn btn-outline-secondary px-4 me-2">Annuler</a>
+                            <button type="submit" class="btn btn-warning px-5 fw-bold shadow-sm text-dark">Valider la
+                                procuration</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if mes_procurations %}
+        <h5 class="fw-bold mt-5 mb-3">Mes procurations actives</h5>
+        <div class="list-group shadow-sm">
+            {% for p in mes_procurations %}
+            <div
+                class="list-group-item border-0 border-start border-4 border-warning d-flex justify-content-between align-items-center p-3 mb-1">
+                <div>
+                    <h6 class="mb-1 fw-bold">Mandataire : {{ p.mandataire.nom }} {{ p.mandataire.prenom }}</h6>
+                    <small class="text-muted">Type : <span class="badge bg-light text-dark">{{ p.type_ag
+                            }}</span></small>
+                </div>
+                <div>
+                    {% if p.statut == 'En attente' %}
+                    <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> En attente de
+                        validation</span>
+                    {% elif p.statut == 'Validé' %}
+                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> Validée</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Annulée</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

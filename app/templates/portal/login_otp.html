@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-5 col-lg-4">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-primary"><i class="bi bi-shield-lock"></i> Accès Sécurisé</h2>
+            <p class="text-muted">Entrez votre ID Membre ou adresse email</p>
+        </div>
+        <div class="card p-4 shadow-sm border-0">
+            <form method="post">
+                <div class="mb-4">
+                    <label class="form-label text-muted small fw-bold">IDENTIFIANT OU EMAIL</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0"><i class="bi bi-person"></i></span>
+                        <input type="text" name="identifiant" class="form-control bg-light border-0"
+                            placeholder="Ex: 124 ou email@domaine.com" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2 shadow-sm">Recevoir mon code par Email</button>
+            </form>
+        </div>
+        <div class="text-center mt-3">
+            <a href="{{ url_for('portal.index') }}" class="text-muted small text-decoration-none"><i
+                    class="bi bi-arrow-left"></i> Retour à l'accueil</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

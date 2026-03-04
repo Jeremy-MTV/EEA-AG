@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="mb-2 mb-md-0">
+        <h2 class="fw-bold m-0"><i class="bi bi-people text-info"></i> Gestion des Membres</h2>
+    </div>
+    <div>
+        <button type="button" class="btn btn-success btn-sm me-2 shadow-sm" data-bs-toggle="modal"
+            data-bs-target="#addMemberModal">
+            <i class="bi bi-person-plus-fill"></i> Nouveau Membre
+        </button>
+        <button type="button" class="btn btn-outline-info btn-sm me-2 shadow-sm" data-bs-toggle="modal"
+            data-bs-target="#exportCsvMembersModal">
+            <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
+        </button>
+
+        <div class="btn-group me-2 shadow-sm">
+            <button type="button" class="btn btn-outline-dark btn-sm" data-bs-toggle="modal"
+                data-bs-target="#exportDbModal">
+                <i class="bi bi-database-down"></i> Export DB
+            </button>
+            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#importDbModal"
+                title="Restaurer une sauvegarde DB">
+                <i class="bi bi-database-up"></i> Restaurer
+            </button>
+        </div>
+
+        <a href="{{ url_for('admin.view_modifications') }}"
+            class="btn btn-outline-secondary btn-sm shadow-sm position-relative">
+            <i class="bi bi-hourglass-split"></i> En Attente
+            <span
+                class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle"></span>
+        </a>
+    </div>
+</div>
+
+<ul class="nav nav-tabs mb-3" id="membersTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active fw-bold text-dark" id="current-tab" data-bs-toggle="tab"
+            data-bs-target="#current" type="button" role="tab" aria-controls="current" aria-selected="true"><i
+                class="bi bi-person-check text-success"></i> Année en cours</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link text-muted" id="archives-tab" data-bs-toggle="tab" data-bs-target="#archives"
+            type="button" role="tab" aria-controls="archives" aria-selected="false"><i class="bi bi-archive"></i>
+            Archives Précédentes</button>
+    </li>
+</ul>
+
+<div class="tab-content" id="membersTabContent">
+    <div class="tab-pane fade show active" id="current" role="tabpanel" aria-labelledby="current-tab">
+        <div class="card shadow-sm border-0 border-top border-4 border-info">
+            <div class="card-header d-flex justify-content-between align-items-center bg-white border-bottom">
+                <span><i class="bi bi-list"></i> Annuaire des Membres</span>
+                <div class="d-flex align-items-center">
+                    <button id="filterNonRenewed" class="btn btn-outline-danger btn-sm me-3"><i
+                            class="bi bi-funnel"></i> Non Renouvelés</button>
+                    <input type="text" id="searchTable" class="form-control form-control-sm"
+                        placeholder="Chercher un nom ou un email..." style="width: 250px;">
+                </div>
+            </div>
+            <div class="row mb-4">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Membre</th>
+                            <th>Contact</th>
+                            <th>Rôle / Statut</th>
+                            <th>Renouvellement 25/26</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        {% for m in membres %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold">{{ m.nom }} {{ m.prenom }}</div>
+                                <div class="text-muted small">#{{ m.id }}</div>
+                            </td>
+                            <td>
+                                <div><i class="bi bi-envelope text-muted"></i> <a href="mailto:{{ m.email }}"
+                                        class="text-decoration-none text-dark">{{ m.email or 'N/A' }}</a></div>
+                                <div class="small text-muted"><i class="bi bi-telephone"></i> {{ m.telephone or 'N/A' }}
+                                </div>
+                            </td>
+                            <td><span class="badge bg-secondary">{{ m.statut_membre or 'Inconnu' }}</span></td>
+                            <td>
+                                {% if m.renouvellement == 'Oui' %}
+                                <span class="badge-status bg-ok"><i class="bi bi-check-circle"></i> À Jour</span>
+                                {% else %}
+                                <span class="badge-status bg-ko"><i class="bi bi-x-circle"></i> Non Renouvelé</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-outline-primary btn-sm rounded-circle"
+                                    onclick='window.location.href="/admin/edit/{{ m.id }}"' title="Modifier">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="archives" role="tabpanel" aria-labelledby="archives-tab">
+        {% if archives %}
+        <div class="accordion shadow-sm" id="archivesAccordion">
+            {% for arch in archives %}
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading{{ loop.index }}">
+                    <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapse{{ loop.index }}" aria-expanded="false"
+                        aria-controls="collapse{{ loop.index }}">
+                        <i class="bi bi-folder-fill text-warning me-2"></i> Archive de l'année clôturée en {{ arch.year
+                        }}
+                    </button>
+                </h2>
+                <div id="collapse{{ loop.index }}" class="accordion-collapse collapse"
+                    aria-labelledby="heading{{ loop.index }}" data-bs-parent="#archivesAccordion">
+                    <div class="accordion-body p-0">
+                        <table class="table table-hover align-middle mb-0 small">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Membre</th>
+                                    <th>Email</th>
+                                    <th>Rôle / Statut</th>
+                                    <th>Présent à l'AG</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for m in arch.data %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">{{ m.nom }} {{ m.prenom }}</div>
+                                        <div class="text-muted">#{{ m.id }}</div>
+                                    </td>
+                                    <td>{{ m.email or 'N/A' }}</td>
+                                    <td><span class="badge bg-secondary">{{ m.statut_membre or 'Inconnu' }}</span></td>
+                                    <td>
+                                        {% if m.is_present %}
+                                        <span class="text-success fw-bold"><i class="bi bi-check-circle"></i> Oui</span>
+                                        {% else %}
+                                        <span class="text-muted"><i class="bi bi-x-circle"></i> Non</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted text-center py-5">Aucune archive de base de données n'a été générée pour le moment.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('searchTable').addEventListener('keyup', function () {
+        var value = this.value.toLowerCase();
+        var rows = document.querySelectorAll('#tableBody tr');
+        rows.forEach(function (row) {
+            var text = row.textContent.toLowerCase();
+            row.style.display = text.indexOf(value) > -1 ? '' : 'none';
+        });
+    });
+
+    document.getElementById('filterNonRenewed').addEventListener('click', function () {
+        var isFiltering = this.classList.contains('active');
+        var rows = document.querySelectorAll('#tableBody tr');
+
+        if (isFiltering) {
+            this.classList.remove('active');
+            rows.forEach(r => r.style.display = '');
+        } else {
+            this.classList.add('active');
+            rows.forEach(r => {
+                var text = r.textContent.toLowerCase();
+                r.style.display = text.indexOf('non renouvelé') > -1 ? '' : 'none';
+            });
+        }
+    });
+</script><!-- Add Member Modal -->
+<div class="modal fade" id="addMemberModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <form action="{{ url_for('admin.add_member') }}" method="POST">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-person-plus"></i> Nouveau Membre</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-2">
+                            <label class="form-label small text-muted">Civilité</label>
+                            <select name="civilite" class="form-select">
+                                <option value="Monsieur">M.</option>
+                                <option value="Madame">Mme</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small text-muted">Nom</label>
+                            <input type="text" name="nom" class="form-control" required>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small text-muted">Prénom</label>
+                            <input type="text" name="prenom" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Email</label>
+                            <input type="email" name="email" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Téléphone</label>
+                            <input type="text" name="telephone" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <hr class="my-2">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Adresse</label>
+                            <input type="text" name="adresse" class="form-control">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small text-muted">Code Postal</label>
+                            <input type="text" name="code_postal" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted">Ville</label>
+                            <input type="text" name="ville" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <hr class="my-2">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted">Date Naissance</label>
+                            <input type="text" name="date_naissance" class="form-control" placeholder="JJ/MM/AAAA">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted">Nationalité</label>
+                            <input type="text" name="nationalite" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted">Métier</label>
+                            <input type="text" name="metier" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <hr class="my-2">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Date de Baptême</label>
+                            <input type="text" name="date_bapteme" class="form-control" placeholder="JJ/MM/AAAA">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Lieu de Baptême</label>
+                            <input type="text" name="lieu_bapteme" class="form-control" placeholder="Église, Ville...">
+                        </div>
+                        <div class="col-12">
+                            <hr class="my-2">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-primary">Renouvellement 25/26</label>
+                            <select name="renouvellement" class="form-select border-primary">
+                                <option value="Oui">Oui (À jour)</option>
+                                <option value="Non" selected>Non</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-info">Statut Global</label>
+                            <select name="statut_membre" class="form-select border-info">
+                                <option value="Futur membre">Futur membre</option>
+                                <option value="Membre année en cours" selected>Membre année en cours</option>
+                                <option value="Ancien membre">Ancien membre</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Créer le
+                        Membre</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Import DB Modal -->
+<div class="modal fade" id="importDbModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form action="{{ url_for('admin.restore_db') }}" method="POST" enctype="multipart/form-data">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill text-warning"></i> Restauration de
+                        Secours</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="alert alert-warning small">
+                        <strong>Attention :</strong> L'importation d'un fichier <code>.db</code> remplacera
+                        <b>intégralement et définitivement</b> la base de données actuelle. Toutes les modifications
+                        effectuées depuis cette sauvegarde seront perdues.
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fichier de Sauvegarde (.db)</label>
+                        <input class="form-control" type="file" name="db_file" accept=".db" required>
+                    </div>
+                    <div class="form-check text-danger">
+                        <input class="form-check-input" type="checkbox" id="confirmRestore" required>
+                        <label class="form-check-label fw-bold small" for="confirmRestore">
+                            Je confirme vouloir écraser les données actuelles avec ce fichier de sauvegarde.
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-database-up"></i> Importer et
+                        Restaurer</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Export CSV Members Modal -->
+<div class="modal fade" id="exportCsvMembersModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-info text-dark">
+                <h5 class="modal-title"><i class="bi bi-info-circle-fill"></i> Exporter la Liste des Membres</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p>En lançant cet export, le système effectuera <strong>automatiquement 4 actions</strong> :</p>
+                <ul class="mb-0">
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Téléchargement du fichier CSV sur votre
+                        ordinateur.</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Création d'une copie serveur locale dans
+                        <code>/backups/manual/</code>.</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Synchronisation du fichier sur le dossier
+                        partagé (NAS).</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Mise à jour immédiate du document en ligne
+                        Google Sheets.</li>
+                </ul>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                <a href="{{ url_for('admin.export_csv', export_type='members') }}"
+                    class="btn btn-info text-dark fw-bold"
+                    onclick="setTimeout(()=>bootstrap.Modal.getInstance(document.getElementById('exportCsvMembersModal')).hide(), 1000);">
+                    <i class="bi bi-download"></i> Lancer l'Export Multiple
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export DB Modal -->
+<div class="modal fade" id="exportDbModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="bi bi-info-circle-fill"></i> Exporter la Base de Données</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p>En lançant cet export, le système effectuera <strong>3 actions de sécurité</strong> :</p>
+                <ul class="mb-0">
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Téléchargement de la base mère complète
+                        <code>.db</code> sur votre machine.</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Sauvegarde locale de secours conservée dans
+                        <code>/backups/manual/</code>.</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Copie de secours miroir transférée sur le
+                        NAS.</li>
+                </ul>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                <a href="{{ url_for('admin.export_db') }}" class="btn btn-dark fw-bold"
+                    onclick="setTimeout(()=>bootstrap.Modal.getInstance(document.getElementById('exportDbModal')).hide(), 1000);">
+                    <i class="bi bi-download"></i> Lancer l'Export Serveur
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

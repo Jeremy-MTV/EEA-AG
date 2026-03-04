@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Gestion des Utilisateurs{% endblock %}
+
+{% block content %}
+<div class="row pt-4 mb-4">
+    <div class="col-8">
+        <h2 class="fw-bold text-dark"><i class="bi bi-person-workspace text-dark"></i> Gestion des Utilisateurs Admin
+        </h2>
+        <p class="text-muted">Gérez les accès au back-office EEA Manager. Attention, le rôle "admin" a tous les droits,
+            le rôle "gestion" est restreint au Jour J de l'AG.</p>
+    </div>
+    <div class="col-4 text-end">
+        <a href="{{ url_for('portal.index') }}" class="btn btn-outline-secondary me-2"><i class="bi bi-house"></i>
+            Espace Admin</a>
+        <button class="btn btn-dark fw-bold" data-bs-toggle="modal" data-bs-target="#addUserModal">
+            <i class="bi bi-person-plus"></i> Nouvel Utilisateur
+        </button>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th class="ps-4">Utilisateur</th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td class="ps-4 fw-bold">
+                        <i class="bi bi-person-circle fs-5 text-secondary me-2"></i> {{ u.username }}
+                    </td>
+                    <td class="text-muted">
+                        {{ u.email or 'Non renseigné' }}
+                    </td>
+                    <td>
+                        {% if u.role == 'admin' %}
+                        <span class="badge bg-primary">Administrateur</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Gestion (Scan)</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end pe-4">
+                        <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal"
+                            data-bs-target="#editUserModal{{ u.id }}">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        {% if session.get('user_id') != u.id %}
+                        <form action="{{ url_for('admin.delete_user', user_id=u.id) }}" method="POST" class="d-inline"
+                            onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i
+                                    class="bi bi-trash"></i></button>
+                        </form>
+                        {% else %}
+                        <button class="btn btn-sm btn-outline-danger disabled"
+                            title="Vous ne pouvez pas vous supprimer vous-même"><i class="bi bi-trash"></i></button>
+                        {% endif %}
+                    </td>
+                </tr>
+
+                <!-- Edit User Modal -->
+                <div class="modal fade" id="editUserModal{{ u.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header bg-light">
+                                <h5 class="modal-title fw-bold">Modifier l'accès de {{ u.username }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <form action="{{ url_for('admin.edit_user', user_id=u.id) }}" method="POST">
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small fw-bold">Aperçu Identifiant</label>
+                                        <input type="text" class="form-control bg-light" value="{{ u.username }}"
+                                            disabled>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Email (Optionnel)</label>
+                                        <input type="email" class="form-control" name="email"
+                                            value="{{ u.email or '' }}">
+                                        <div class="form-text">Utile pour un futur "Mot de passe oublié".</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Nouveau Mot de Passe</label>
+                                        <input type="password" class="form-control" name="password"
+                                            placeholder="Laissez vide pour ne pas modifier">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Rôle</label>
+                                        <select class="form-select" name="role" {% if session.get('user_id')==u.id
+                                            %}disabled{% endif %}>
+                                            <option value="admin" {% if u.role=='admin' %}selected{% endif %}>
+                                                Administrateur (Tous accès)</option>
+                                            <option value="gestion" {% if u.role=='gestion' %}selected{% endif %}>
+                                                Gestion (Jour J, Scan, TV)</option>
+                                        </select>
+                                        {% if session.get('user_id') == u.id %}
+                                        <div class="form-text text-warning"><i class="bi bi-exclamation-triangle"></i>
+                                            Vous ne pouvez pas modifier votre propre rôle.</div>
+                                        <input type="hidden" name="role" value="{{ u.role }}">
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="modal-footer bg-light">
+                                    <button type="button" class="btn btn-outline-secondary"
+                                        data-bs-dismiss="modal">Annuler</button>
+                                    <button type="submit" class="btn btn-primary fw-bold">Enregistrer</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold">Nouvel Utilisateur</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('admin.add_user') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Identifiant Unique</label>
+                        <input type="text" class="form-control" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Email (Optionnel)</label>
+                        <input type="email" class="form-control" name="email">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Mot de Passe</label>
+                        <input type="password" class="form-control" name="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Rôle</label>
+                        <select class="form-select" name="role">
+                            <option value="gestion" selected>Gestion (Jour J, Scan, TV)</option>
+                            <option value="admin">Administrateur (Tous accès)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-dark fw-bold">Ajouter l'utilisateur</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

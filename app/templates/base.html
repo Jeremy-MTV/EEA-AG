@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EEA Argenteuil - Gestion AG V3</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --bg-color: #f4f6f9;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+        }
+
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 15px 0;
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: var(--primary-color) !important;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        }
+
+        .card-header {
+            background: white;
+            border-bottom: 2px solid #f0f2f5;
+            font-weight: 600;
+            padding: 15px 20px;
+            border-radius: 12px 12px 0 0 !important;
+        }
+
+        .table th {
+            border-bottom: 2px solid #edf2f7;
+            color: #718096;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+        }
+
+        .btn-primary:hover {
+            background-color: #1a252f;
+        }
+
+        .badge-status {
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        .bg-ok {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .bg-ko {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="{{ url_for('portal.index') }}"><i
+                    class="bi bi-person-lines-fill"></i>
+                EEA Manager</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('portal.index') }}"><i class="bi bi-house"></i> Accueil</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    {% if session.get('user_id') %}
+                    <span class="me-3 fw-bold"><i class="bi bi-person-circle"></i> {{ session.get('username')|capitalize
+                        }}</span>
+                    <a href="{{ url_for('admin.logout') }}" class="btn btn-outline-danger btn-sm">Déconnexion</a>
+                    {% else %}
+                    <a href="{{ url_for('admin.login') }}" class="btn btn-outline-secondary btn-sm"><i
+                            class="bi bi-shield-lock"></i> Administration</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    {% if request.blueprint == 'portal' %}
+    <footer class="mt-auto py-4 mt-5 bg-white border-top text-center text-muted small">
+        <div class="container">
+            <p class="mb-1">&copy; 2026 Église En Action Argenteuil - Tous droits réservés.</p>
+            <p class="mb-0">
+                <a href="{{ url_for('portal.mentions_legales') }}" class="text-decoration-none text-muted">Mentions
+                    Légales & RGPD</a> |
+                <a href="mailto:informatique@eglisenaction.fr" class="text-decoration-none text-muted">Contact
+                    Support</a>
+            </p>
+            <p class="mt-2" style="font-size: 0.75rem;"><i class="bi bi-shield-lock"></i> Plateforme hébergée en local -
+                EEA Manager</p>
+        </div>
+    </footer>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

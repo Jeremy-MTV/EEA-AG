@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="col-md-5 col-lg-4">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-primary">Connexion</h2>
+            <p class="text-muted">Accès sécurisé à la gestion de l'AG V3</p>
+        </div>
+        <div class="card p-4">
+            <form method="post" action="{{ url_for('admin.login') }}">
+                <div class="mb-4">
+                    <label class="form-label text-muted small">IDENTIFIANT</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0"><i class="bi bi-person"></i></span>
+                        <input type="text" name="username" class="form-control bg-light border-0"
+                            placeholder="Ex: admin" required>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label text-muted small">MOT DE PASSE</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0"><i class="bi bi-lock"></i></span>
+                        <input type="password" name="password" class="form-control bg-light border-0"
+                            placeholder="••••••" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2 shadow-sm">Se Connecter</button>
+            </form>
+        </div>
+        <div class="text-center mt-3 text-muted small">
+            &copy; 2025 Eglise En Action Argenteuil
+        </div>
+    </div>
+</div>
+{% endblock %}

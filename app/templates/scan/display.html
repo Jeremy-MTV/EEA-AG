@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Affichage AG</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #0f172a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        .tv-header {
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .gauge-container {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        /* Custom Progress Bar CSS */
+        .progress-massive {
+            height: 80px;
+            border-radius: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 15px;
+            font-size: 2rem;
+            font-weight: 900;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .quorum-marker {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #fbbf24;
+            z-index: 5;
+            box-shadow: 0 0 10px #fbbf24;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-val {
+            font-size: 5rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .stat-lbl {
+            font-size: 1.5rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="tv-header d-flex justify-content-between align-items-center">
+        <h1 class="m-0 fw-bold"><i class="bi bi-buildings"></i> Assemblée Générale Ordinaire</h1>
+        <h3 class="m-0 text-muted" id="clock">--:--:--</h3>
+    </div>
+
+    <div class="main-content">
+        <div class="gauge-container w-100">
+
+            <div class="row mb-5">
+                <div class="col-4">
+                    <div class="stat-box">
+                        <div class="stat-val text-primary" id="valTotal">{{ stats.total }}</div>
+                        <div class="stat-lbl">Inscrits</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="stat-box border-success" style="background: rgba(16, 185, 129, 0.1);">
+                        <div class="stat-val text-success" id="valPresents">{{ stats.presents }}</div>
+                        <div class="stat-lbl text-success">Présents</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="stat-box border-warning" style="background: rgba(251, 191, 36, 0.1);">
+                        <div class="stat-val text-warning" id="valQuorum">{{ stats.quorum_target }}</div>
+                        <div class="stat-lbl text-warning">Quorum</div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="mb-4 text-start font-monospace text-uppercase" style="color:#94a3b8;">Progression vers le Quorum
+            </h2>
+            <div class="progress-massive position-relative">
+                <div class="progress-fill" id="gaugeBar" style="width: {{ stats.quorum_percent }}%;"></div>
+                <div class="quorum-marker" style="left: 50%;"></div>
+                <div class="progress-text" id="gaugeText">{{ stats.quorum_percent }}%</div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-3 px-3"
+                style="color: #64748b; font-size: 1.5rem; font-weight:bold;">
+                <span>0</span>
+                <span class="text-warning">Quorum (50% + 1)</span>
+                <span>Objectif 100%</span>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Horloge
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('fr-FR');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Récupération des statistiques en temps réel (API commune au Dashboard AG)
+        function pollAgStats() {
+            fetch("{{ url_for('admin.api_ag_stats') }}")
+                .then(res => res.json())
+                .then(data => {
+                    // Mettre à jour les compteurs
+                    document.getElementById('valTotal').innerText = data.total;
+                    document.getElementById('valPresents').innerText = data.presents;
+
+                    const quorumTarget = (data.total > 0) ? Math.floor(data.total / 2) + 1 : 0;
+                    document.getElementById('valQuorum').innerText = quorumTarget;
+
+                    // Mettre à jour la jauge
+                    let percent = data.percent;
+                    if (percent > 100) percent = 100;
+
+                    document.getElementById('gaugeBar').style.width = percent + '%';
+                    document.getElementById('gaugeText').innerText = data.percent + '%';
+
+                    // Appliquer des classes de succès si le quorum est atteint
+                    if (data.percent >= 50) {
+                        document.querySelector('.stat-box.border-warning').className = 'stat-box border-success';
+                        document.querySelector('.stat-val.text-warning').className = 'stat-val text-success';
+                        document.querySelector('.stat-lbl.text-warning').className = 'stat-lbl text-success';
+                    } else {
+                        document.querySelector('.stat-box.border-success').className = 'stat-box border-warning';
+                        document.querySelector('.stat-val.text-success').className = 'stat-val text-warning';
+                        document.querySelector('.stat-lbl.text-success').className = 'stat-lbl text-warning';
+
+                        // Remettre la couleur de "Présents"
+                        document.getElementById('valPresents').parentElement.className = 'stat-box border-success';
+                        document.getElementById('valPresents').className = 'stat-val text-success';
+                        document.getElementById('valPresents').nextElementSibling.className = 'stat-lbl text-success';
+                    }
+                })
+                .catch(err => console.error("Erreur de synchronisation TV :", err));
+        }
+
+        // Rafraîchir l'écran TV toutes les 3 secondes
+        setInterval(pollAgStats, 3000);
+    </script>
+</body>
+
+</html>

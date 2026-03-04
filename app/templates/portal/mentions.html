@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Mentions Légales & RGPD{% endblock %}
+
+{% block content %}
+<div class="row pt-5 justify-content-center mb-5">
+    <div class="col-md-10 bg-white p-5 rounded shadow-sm">
+        <h2 class="fw-bold mb-4 text-primary"><i class="bi bi-shield-check"></i> Mentions Légales et Politique de
+            Confidentialité</h2>
+        <p class="text-muted lead">Application de gestion des membres et des Assemblées Générales de l'Église En Action
+            Argenteuil.</p>
+        <hr class="my-4">
+
+        <h4 class="fw-bold mt-4">1. Éditeur de l'application</h4>
+        <p>Cette application est éditée et gérée en interne par l'association <strong>Église En Action
+                Argenteuil</strong> (EEA).</p>
+
+        <h4 class="fw-bold mt-4">2. Hébergement et Sécurité (Architecture)</h4>
+        <p>Afin de garantir une sécurité maximale et le respect strict du RGPD, cette application est hébergée
+            <strong>localement sur un serveur privé (Mini-PC)</strong> situé dans les locaux de l'association, protégé
+            derrière un pare-feu et non hébergée dans le Cloud public.
+        </p>
+        <p>L'accès distant (DMZ/Reverse Proxy) est strictement limité aux pages d'accueil, d'inscription, de
+            consultation de profil (protégées par OTP) et de procuration.</p>
+        <p>L'ensemble des données d'administration, les listes de membres, l'interface de scan et de présence (routes
+            <code>/admin</code> et <code>/scan</code>) sont inaccessibles depuis Internet et réservées au réseau local
+            (LAN) de l'association.
+        </p>
+
+        <h4 class="fw-bold mt-4">3. Collecte et Traitement des Données (RGPD)</h4>
+        <p>Conformément au Règlement Général sur la Protection des Données (RGPD), les informations recueillies (Nom,
+            Prénom, Email, Téléphone, Adresse, etc.) sont nécessaires pour :</p>
+        <ul>
+            <li>La gestion de l'annuaire des membres de l'association.</li>
+            <li>Le calcul du quorum légal lors des Assemblées Générales (ordinaires et extraordinaires).</li>
+            <li>L'envoi des convocations et l'identification le jour de l'événement.</li>
+        </ul>
+        <p>Aucune donnée n'est revendue à des tiers. Les membres ont la possibilité de consulter et modifier leurs
+            propres données via l'espace personnalisé (Mon Profil), sécurisé par un code à usage unique (OTP) envoyé par
+            email.</p>
+
+        <h4 class="fw-bold mt-4">4. Sauvegardes</h4>
+        <p>Les données sont stockées dans la base de données interne du serveur. Des sauvegardes régulières sont
+            effectuées de manière automatisée et sécurisée sur le NAS interne de l'Eglise (Network Attached Storage)
+            pour prévenir toute perte de données.</p>
+
+        <h4 class="fw-bold mt-4">5. Droits d'accès, rectification et suppression</h4>
+        <p>En tant que membre, vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation et
+            d'opposition au traitement de vos données. Pour exercer ce droit, veuillez contacter le secrétariat ou
+            l'administration à l'adresse <strong>informatique@eglisenaction.fr</strong>.</p>
+
+        <div class="mt-5 text-center">
+            <a href="{{ url_for('portal.index') }}" class="btn btn-primary"><i class="bi bi-house"></i> Retour à
+                l'accueil</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
